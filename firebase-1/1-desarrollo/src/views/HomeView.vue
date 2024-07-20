@@ -1,18 +1,27 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <h1>Home</h1>
+    <FormComp/>
+    <UsersTable />
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import { mapActions } from 'vuex';
+import UsersTable from '@/components/UsersTable.vue'
+import FormComp from '@/components/FormComp.vue'
 
 export default {
   name: 'HomeView',
+  methods: {
+    ...mapActions(['setUsuarios'])
+  },
   components: {
-    HelloWorld
+    UsersTable,
+    FormComp
+  },
+  mounted(){
+    this.setUsuarios();
   }
 }
 </script>

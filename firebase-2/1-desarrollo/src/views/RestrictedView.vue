@@ -20,7 +20,6 @@ export default {
   // filters: {},
   // -- Lifecycle Methods
   mounted(){
-    console.log(auth)
     this.currentUser = auth.currentUser
   }
   // -- End Lifecycle Methods

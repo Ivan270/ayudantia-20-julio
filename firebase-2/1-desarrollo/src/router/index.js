@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
-import store from "@/store";
+// import store from "@/store";
+import { auth, onAuthStateChanged } from "@/auth";
 
 const routes = [
   {
@@ -33,20 +34,35 @@ const router = createRouter({
   routes,
 });
 
-// Guard para proteger rutas restringidas, solo se permite el acceso a usuarios logeados
-router.beforeEach((to, from, next) => {
-  const requiresAuth = to.meta.requiresAuth;
-  if (requiresAuth) {
-    if (store.state.user) {
-      next();
-    } else {
-      alert("Debes estar autenticado");
-      next("/login");
-    }
+
+// Funcion permite esperar a que el estado de auth (de firebase) esté listo. Así cuando se escriba la URL en la barra de busqueda (esto recarga la aplicacion), permita cargar al usuario si es que exista y no nos devuelva null o undefined.
+function getCurrentUser() {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (user) => {
+        unsubscribe();
+        resolve(user);
+      },
+      reject
+    );
+  });
+}
+
+router.beforeEach(async (to, from, next) => {
+  // Guard para proteger rutas restringidas, solo se permite el acceso a usuarios logeados
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+  if (requiresAuth && !(await getCurrentUser())) {
+    next("/login") ;
+    // Guard para que usuarios logeados no puedan entrar a login o signup
+  } else if (
+    (to.path == "/login" && (await getCurrentUser())) ||
+    (to.path == "/signup" && (await getCurrentUser()))
+  ) {
+    next("/restricted");
   } else {
-    next();
+    next()
   }
 });
-
 
 export default router;
